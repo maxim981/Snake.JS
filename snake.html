@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Snake</title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+		body {
+			overflow: hidden;
+			height: 100vh;
+		}
+		#canvas {
+			display: block;
+			margin: 10px auto;
+			border: 2px solid white;
+			border-radius: 5px;
+		}
+
+		/*#progressBar {
+			height: 8px;
+			width: 200px;
+			position: absolute;
+			top: 20px;
+			left: 50%;
+			transform: translateX(-50%);
+			border: 1px solid #282923;
+			border-radius: 6px;
+			overflow: hidden;
+			box-shadow: 0px 0px 5px red;
+		}*/
+
+		/*#progress {
+			height: 100%;
+			width: 0;
+		}*/
+
+
+	</style>
+</head>
+<body>
+	<div class="container">
+		<canvas id="canvas" height="600" width="1200"></canvas>
+		<audio src="audio/soundFood.mp3"id="soundFood" type="audio/mp3"></audio>
+		<audio src="audio/soundFinish.mp3"id="soundFinish" type="audio/mp3"></audio>
+		<audio src="audio/soundOver.mp3"id="soundOver" type="audio/mp3"></audio>
+
+		<!-- <div id="progressBar">
+			<div id="progress"></div>
+		</div> -->
+	</div>
+
+	<script>
+		// let progressBar = document.getElementById('progressBar');
+		// let progress = document.getElementById('progress');
+
+		let canvas = document.getElementById('canvas');
+		let ctx = canvas.getContext('2d');
+
+		let soundFood = document.getElementById('soundFood');
+		let soundFinish = document.getElementById('soundFinish');
+		let soundOver = document.getElementById('soundOver');
+
+		soundOver.volume = 0.3;
+		soundFinish.volume = 0.3;
+
+		let progressBG = 0;
+
+		let speed = 100;
+		let speedUp;
+		let box = 20;
+		let score = 0;
+		let speedLevel = 1;
+
+		let food = {
+			x: Math.floor(Math.random() * 60) * box,
+			y: Math.floor(Math.random() * 28 + 2) * box,
+		}
+
+		let snake = [];
+
+		snake[0] = {
+			x: 300,
+			y: 300,
+		}
+
+		snakeX = snake[0].x;
+		snakeY = snake[0].y;
+
+
+		
+
+
+		//direction
+		let dir;
+		document.addEventListener('keydown', direction);
+		function direction(event) {
+			if(event.code == 'KeyW' && dir != 'down') 	dir = 'up';
+			if(event.code == 'KeyS' && dir != 'up') 	dir = 'down';
+			if(event.code == 'KeyA' && dir != 'right') 	dir = 'left';
+			if(event.code == 'KeyD' && dir != 'left') 	dir = 'right';
+
+		}
+
+		function go(event) {
+			//canvas
+			ctx.fillStyle = '#282923';
+			ctx.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+			
+			//food
+			ctx.fillStyle = '#FD6A03';
+			ctx.fillRect(food.x, food.y, box, box);
+
+			//snake
+			for(i = 0; i < snake.length; i++) {
+				ctx.fillStyle = 'white';
+				ctx.fillRect(snake[i].x, snake[i].y, box, box);
+			}
+			//score panel
+			ctx.fillStyle = '#42433F';
+			ctx.fillRect(0, 0, canvas.offsetWidth, 40);
+
+			//score info
+			ctx.fillStyle = 'white';
+			ctx.font = '30px Arial';
+			ctx.fillText(score, 20, 30);
+
+			//speed info
+			ctx.fillStyle = 'white';
+			ctx.font = '20px Arial';
+			ctx.fillText(`speed ${speedLevel}`, canvas.offsetWidth - 100, 30);
+
+
+			//win
+			if(score == 15) {
+				clearInterval(loop);
+				ctx.fillStyle = '#39ff14';
+				ctx.textAlign = 'center';
+				ctx.textBaseline = 'middle';
+				ctx.font = '60px Arial';
+				ctx.fillText('You Win', 600, 300);
+				soundFinish.play();
+				canvas.style.border = '2px solid #39ff14';
+				canvas.style.boxShadow = '0px 0px 10px #39ff14'
+			}
+
+			//eat food
+			if(snakeX == food.x && snakeY == food.y) {
+				soundFood.play();
+				soundFood.currentTime = 0;
+				food = {
+					x: Math.floor(Math.random() * 60) * box,
+					y: Math.floor(Math.random() * 28 + 2) * box,
+				}
+				score++;
+			
+
+				
+				// if(score < 2) {
+				// 	progress.style.background = 'red';
+				// 	progressBG += 20;
+				// 	progress.style.width = progressBG + 'px';
+				// }
+				// if(score > 2) {
+				// 	progressBG = 0;
+				// 	progress.style.width = 0 + 'px';
+				// 	progressBG+=20;
+				// 	progress.style.background = 'blue';
+				// }
+				
+
+			}
+			else {
+				snake.pop();
+			}
+
+			//border
+			if(snakeX == 0 - box || snakeX == canvas.clientWidth || snakeY == 40 - box || snakeY == canvas.clientHeight) {
+				clearInterval(loop);
+				ctx.fillStyle = 'red';
+				ctx.font = '40px Arial';
+				ctx.textAlign = 'center';
+				ctx.textBaseline = 'middle';
+				ctx.fillText('Game Over', 600, 300);
+				soundOver.play();
+				canvas.style.border = '2px solid red';
+				canvas.style.boxShadow = '0px 0px 10px red'
+
+			}
+
+			//direction
+			if(dir == 'up' && dir != 'down') 	snakeY -= box;
+			if(dir == 'down' && dir != 'up') 	snakeY += box;
+			if(dir == 'left' && dir != 'right') snakeX -= box;
+			if(dir == 'right' && dir != 'left') snakeX += box;
+
+			//eatTail
+			for(i = 0; i < snake.length; i++) {
+				if(snakeX == snake[i].x && snakeY == snake[i].y) {
+					clearInterval(loop);
+					clearInterval(loop);
+					ctx.fillStyle = 'red';
+					ctx.font = '40px Arial';
+					ctx.textAlign = 'center';
+					ctx.textBaseline = 'middle';
+					ctx.fillText('Game Over', 600, 300);
+					soundOver.play();
+					canvas.style.border = '2px solid red';
+					canvas.style.boxShadow = '0px 0px 10px red'
+				}
+			}
+
+			//head
+			let head = {
+				x: snakeX,
+				y: snakeY,
+			}
+
+			snake.unshift(head);
+
+			//speedUp
+			if(score % 2 == 0 && score != 0) {
+				if(speedUp == score) return;
+				clearInterval(loop);
+				speed -= 7;
+				loop = setInterval(go, speed);
+				speedLevel++;
+				speedUp = score;
+			}
+		}
+
+		let loop = setInterval(go, speed);
+
+
+		
+
+
+
+		
+		
+
+
+		
+
+       	 
+
+
+	</script>
+</body>
+</html>
