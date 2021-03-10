@@ -99,10 +99,10 @@
 		let dir;
 		document.addEventListener('keydown', direction);
 		function direction(event) {
-			if(event.code == 'KeyW' && dir != 'down') 	dir = 'up';
-			if(event.code == 'KeyS' && dir != 'up') 	dir = 'down';
-			if(event.code == 'KeyA' && dir != 'right') 	dir = 'left';
-			if(event.code == 'KeyD' && dir != 'left') 	dir = 'right';
+			if(event.code == 'KeyW' || event.code == 'ArrowUp' 		&& dir != 'down') 	dir = 'up';
+			if(event.code == 'KeyS' || event.code == 'ArrowDown'	&& dir != 'up') 	dir = 'down';
+			if(event.code == 'KeyA' || event.code == 'ArrowLeft'	&& dir != 'right') 	dir = 'left';
+			if(event.code == 'KeyD' || event.code == 'ArrowRight' 	&& dir != 'left') 	dir = 'right';
 
 		}
 
